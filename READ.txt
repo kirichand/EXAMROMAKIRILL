@@ -1,1 +1,12 @@
-hello
+#v0.1(roma)
+
+Fixed read_space_objects_data_from_file(input_filename) function
+  Added: object listing for planet
+
+Fixed parse_star_parameters(line, star) function
+  Added: setting parameters for Star() objects
+
+Fixed parse_planet_parameters(line, planet) function
+  Added: setting parameters for Planet() objects
+
+Added test.py for checking mistakes
