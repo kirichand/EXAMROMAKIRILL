@@ -2,17 +2,44 @@
 # license: GPLv3
 
 from solar_objects import Star, Planet
+class object_parametrs ():
 
+    def parse(line, self):
+        """Считывает данные об объекте класса (star,planet) из строки.
+        Предполагается такая строка:
+        Входная строка должна иметь слеюущий формат:
+        Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
 
-def read_space_objects_data_from_file(input_filename):
+        Здесь (x, y) — координаты объекта класса(star,planet), (Vx, Vy) — скорость.
+        Пример строки:
+        Planet 10 red 1000 1 2 3 4
+
+        Параметры:
+
+        **line** — строка с описание планеты.
+        **self** — объект класса.
+        """
+        self.R = float(line.split()[1])
+        self.color = line.split()[2]
+        self.m = float(line.split()[3])
+        self.x = float(line.split()[4])
+        self.y = float(line.split()[5])
+        self.Vx = float(line.split()[6])
+        self.Vy = float(line.split()[7])
+    
+class file_management ():
+   
+   def read_space_objects_data_from_file(input_filename):
     """Cчитывает данные о космических объектах из файла, создаёт сами объекты
     и вызывает создание их графических образов
 
     Параметры:
 
     **input_filename** — имя входного файла
+
     """
 
+    
     objects = []
     with open(input_filename) as input_file:
         for line in input_file:
@@ -21,20 +48,40 @@ def read_space_objects_data_from_file(input_filename):
             object_type = line.split()[0].lower()
             if object_type == "star":
                 star = Star()
-                parse_star_parameters(line, star)
+                object_parametrs.parse(line, star)
                 objects.append(star)
             elif object_type == "planet":
                 planet = Planet()
-                parse_planet_parameters(line, planet)
+                object_parametrs.parse(line, planet)
                 objects.append(planet)
             else:
                 print("Unknown space object")
-
     return objects
+   def write_space_objects_data_to_file(output_filename, space_objects):
+        """Сохраняет данные о космических объектах в файл.
+        Строки должны иметь следующий формат:
+        Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
+        Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
+
+        Параметры:
+
+        **output_filename** — имя входного файла
+        **space_objects** — список объектов планет и звёзд
+        """
+        with open(output_filename, 'w') as out_file:
+            for obj in space_objects:
+                print(out_file, "%s %f %s %f %f %f %f %f" % (obj.type.capitalize(), obj.R, obj.color, obj.m, obj.x, obj.y, obj.Vx, obj.Vy))
+    
 
 
-def parse_star_parameters(line, star):
-    """Считывает данные о звезде из строки.
+
+
+
+
+
+
+"""def parse_star_parameters(line, star):
+    Считывает данные о звезде из строки.
     Входная строка должна иметь слеюущий формат:
     Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
 
@@ -46,7 +93,7 @@ def parse_star_parameters(line, star):
 
     **line** — строка с описание звезды.
     **star** — объект звезды.
-    """
+    
     star.R = float(line.split()[1])
     star.color = line.split()[2]
     star.m = float(line.split()[3])
@@ -56,8 +103,9 @@ def parse_star_parameters(line, star):
     star.Vy = float(line.split()[7])
 
 
-def parse_planet_parameters(line, planet):
-    """Считывает данные о планете из строки.
+  
+  def parse_planet_parameters(line, planet):
+    Считывает данные о планете из строки.
     Предполагается такая строка:
     Входная строка должна иметь слеюущий формат:
     Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
@@ -70,30 +118,16 @@ def parse_planet_parameters(line, planet):
 
     **line** — строка с описание планеты.
     **planet** — объект планеты.
-    """
+    
     planet.R = float(line.split()[1])
     planet.color = line.split()[2]
     planet.m = float(line.split()[3])
     planet.x = float(line.split()[4])
     planet.y = float(line.split()[5])
     planet.Vx = float(line.split()[6])
-    planet.Vy = float(line.split()[7])
+    planet.Vy = float(line.split()[7])"""
 
 
-def write_space_objects_data_to_file(output_filename, space_objects):
-    """Сохраняет данные о космических объектах в файл.
-    Строки должны иметь следующий формат:
-    Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
-    Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
-
-    Параметры:
-
-    **output_filename** — имя входного файла
-    **space_objects** — список объектов планет и звёзд
-    """
-    with open(output_filename, 'w') as out_file:
-        for obj in space_objects:
-            print(out_file, "%s %f %s %f %f %f %f %f" % (obj.type.capitalize(), obj.R, obj.color, obj.m, obj.x, obj.y, obj.Vx, obj.Vy))
 
 
 if __name__ == "__main__":
