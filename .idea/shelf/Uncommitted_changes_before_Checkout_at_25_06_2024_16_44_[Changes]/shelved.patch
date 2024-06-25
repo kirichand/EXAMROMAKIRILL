@@ -1,0 +1,332 @@
+Index: solar_input.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># coding: utf-8\r\n# license: GPLv3\r\n\r\nfrom solar_objects import Star, Planet\r\n\r\n\r\ndef read_space_objects_data_from_file(input_filename):\r\n    \"\"\"Cчитывает данные о космических объектах из файла, создаёт сами объекты\r\n    и вызывает создание их графических образов\r\n\r\n    Параметры:\r\n\r\n    **input_filename** — имя входного файла\r\n    \"\"\"\r\n\r\n    objects = []\r\n    with open(input_filename) as input_file:\r\n        for line in input_file:\r\n            if len(line.strip()) == 0 or line[0] == '#':\r\n                continue  # пустые строки и строки-комментарии пропускаем\r\n            object_type = line.split()[0].lower()\r\n            if object_type == \"star\":  # FIXME: do the same for planet\r\n                star = Star()\r\n                parse_star_parameters(line, star)\r\n                objects.append(star)\r\n            else:\r\n                print(\"Unknown space object\")\r\n            if object_type == \"planet\":  # v0.1\r\n                planet = Planet()\r\n                parse_star_parameters(line, planet)\r\n                objects.append(planet)\r\n            else:\r\n                print(\"Unknown space object\")\r\n\r\n    return objects\r\n\r\n\r\ndef parse_star_parameters(line, star):\r\n    \"\"\"Считывает данные о звезде из строки.\r\n    Входная строка должна иметь слеюущий формат:\r\n    Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>\r\n\r\n    Здесь (x, y) — координаты зведы, (Vx, Vy) — скорость.\r\n    Пример строки:\r\n    Star 10 red 1000 1 2 3 4\r\n\r\n    Параметры:\r\n\r\n    **line** — строка с описание звезды.\r\n    **star** — объект звезды.\r\n    \"\"\"\r\n    star = Star()                # v0.1\r\n    star.R = line.split()[1]\r\n    star.color = line.split()[2]\r\n    star.m = line.split()[3]\r\n    star.x = line.split()[4]\r\n    star.y = line.split()[5]\r\n    star.vx = line.split()[6]\r\n    star.vy = line.split()[7]\r\n    # pass\r\n    # FIXME: not done yet\r\n\r\ndef parse_planet_parameters(line, planet):\r\n    \"\"\"Считывает данные о планете из строки.\r\n    Предполагается такая строка:\r\n    Входная строка должна иметь слеюущий формат:\r\n    Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>\r\n\r\n    Здесь (x, y) — координаты планеты, (Vx, Vy) — скорость.\r\n    Пример строки:\r\n    Planet 10 red 1000 1 2 3 4\r\n\r\n    Параметры:\r\n\r\n    **line** — строка с описание планеты.\r\n    **planet** — объект планеты.\r\n    \"\"\"\r\n    planet = Planet()                #v0.1\r\n    planet.R = line.split()[1]\r\n    planet.color = line.split()[2]\r\n    planet.m = line.split()[3]\r\n    planet.x = line.split()[4]\r\n    planet.y = line.split()[5]\r\n    planet.vx = line.split()[6]\r\n    planet.vy = line.split()[7]\r\n    # pass\r\n    # FIXME: not done yet...\r\n\r\n\r\ndef write_space_objects_data_to_file(output_filename, space_objects):\r\n    \"\"\"Сохраняет данные о космических объектах в файл.\r\n    Строки должны иметь следующий формат:\r\n    Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>\r\n    Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>\r\n\r\n    Параметры:\r\n\r\n    **output_filename** — имя входного файла\r\n    **space_objects** — список объектов планет и звёзд\r\n    \"\"\"\r\n    with open(output_filename, 'w') as out_file:\r\n        for obj in space_objects:\r\n            print(out_file, \"%s %d %s %f\" % ('1', 2, '3', 4.5))\r\n            # FIXME: should store real values\r\n\r\n# FIXME: хорошо бы ещё сделать функцию, сохранающую статистику в заданный файл...\r\n\r\nif __name__ == \"__main__\":\r\n    print(\"This module is not for direct call!\")\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_input.py b/solar_input.py
+--- a/solar_input.py	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/solar_input.py	(date 1719322292726)
+@@ -23,11 +23,9 @@
+                 star = Star()
+                 parse_star_parameters(line, star)
+                 objects.append(star)
+-            else:
+-                print("Unknown space object")
+-            if object_type == "planet":  # v0.1
++            elif object_type == "planet":  # v0.2
+                 planet = Planet()
+-                parse_star_parameters(line, planet)
++                parse_planet_parameters(line, planet)
+                 objects.append(planet)
+             else:
+                 print("Unknown space object")
+@@ -48,15 +46,16 @@
+ 
+     **line** — строка с описание звезды.
+     **star** — объект звезды.
+-    """
+-    star = Star()                # v0.1
+-    star.R = line.split()[1]
++    """                                # v0.2
++    star.R = float(line.split()[1])
+     star.color = line.split()[2]
+-    star.m = line.split()[3]
+-    star.x = line.split()[4]
+-    star.y = line.split()[5]
+-    star.vx = line.split()[6]
+-    star.vy = line.split()[7]
++    star.m = float(line.split()[3])
++    star.x = float(line.split()[4])
++    star.y = float(line.split()[5])
++    star.Vx = float(line.split()[6])
++    star.Vy = float(line.split()[7])
++
++    #return star
+     # pass
+     # FIXME: not done yet
+ 
+@@ -74,15 +73,16 @@
+ 
+     **line** — строка с описание планеты.
+     **planet** — объект планеты.
+-    """
+-    planet = Planet()                #v0.1
+-    planet.R = line.split()[1]
++    """                              #v0.2
++    planet.R = float(line.split()[1])
+     planet.color = line.split()[2]
+-    planet.m = line.split()[3]
+-    planet.x = line.split()[4]
+-    planet.y = line.split()[5]
+-    planet.vx = line.split()[6]
+-    planet.vy = line.split()[7]
++    planet.m = float(line.split()[3])
++    planet.x = float(line.split()[4])
++    planet.y = float(line.split()[5])
++    planet.Vx = float(line.split()[6])
++    planet.Vy = float(line.split()[7])
++
++    #return planet
+     # pass
+     # FIXME: not done yet...
+ 
+@@ -99,8 +99,8 @@
+     **space_objects** — список объектов планет и звёзд
+     """
+     with open(output_filename, 'w') as out_file:
+-        for obj in space_objects:
+-            print(out_file, "%s %d %s %f" % ('1', 2, '3', 4.5))
++        for obj in space_objects:             # v0.2
++            print(out_file, "%s %f %s %f %f %f %f %f" % (obj.type.capitalize(), obj.R, obj.color, obj.m, obj.x, obj.y, obj.Vx, obj.Vy))
+             # FIXME: should store real values
+ 
+ # FIXME: хорошо бы ещё сделать функцию, сохранающую статистику в заданный файл...
+Index: solar_vis.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># coding: utf-8\r\n# license: GPLv3\r\n\r\n\"\"\"Модуль визуализации.\r\nНигде, кроме этого модуля, не используются экранные координаты объектов.\r\nФункции, создающие гaрафические объекты и перемещающие их на экране, принимают физические координаты\r\n\"\"\"\r\n\r\nheader_font = \"Arial-16\"\r\n\"\"\"Шрифт в заголовке\"\"\"\r\n\r\nwindow_width = 800\r\n\"\"\"Ширина окна\"\"\"\r\n\r\nwindow_height = 800\r\n\"\"\"Высота окна\"\"\"\r\n\r\nscale_factor = None\r\n\"\"\"Масштабирование экранных координат по отношению к физическим.\r\nТип: float\r\nМера: количество пикселей на один метр.\"\"\"\r\n\r\n\r\ndef calculate_scale_factor(max_distance):\r\n    \"\"\"Вычисляет значение глобальной переменной **scale_factor** по данной характерной длине\"\"\"\r\n    global scale_factor\r\n    scale_factor = 0.4*min(window_height, window_width)/max_distance\r\n    print('Scale factor:', scale_factor)\r\n\r\n\r\ndef scale_x(x):\r\n    \"\"\"Возвращает экранную **x** координату по **x** координате модели.\r\n    Принимает вещественное число, возвращает целое число.\r\n    В случае выхода **x** координаты за пределы экрана возвращает\r\n    координату, лежащую за пределами холста.\r\n\r\n    Параметры:\r\n\r\n    **x** — x-координата модели.\r\n    \"\"\"\r\n\r\n    return int(x*scale_factor) + window_width//2\r\n\r\n\r\ndef scale_y(y):\r\n    \"\"\"Возвращает экранную **y** координату по **y** координате модели.\r\n    Принимает вещественное число, возвращает целое число.\r\n    В случае выхода **y** координаты за пределы экрана возвращает\r\n    координату, лежащую за пределами холста.\r\n    Направление оси развёрнуто, чтобы у модели ось **y** смотрела вверх.\r\n\r\n    Параметры:\r\n\r\n    **y** — y-координата модели.\r\n    \"\"\"\r\n\r\n    return y  # FIXME: not done yet\r\n\r\n\r\ndef create_star_image(space, star):\r\n    \"\"\"Создаёт отображаемый объект звезды.\r\n\r\n    Параметры:\r\n\r\n    **space** — холст для рисования.\r\n    **star** — объект звезды.\r\n    \"\"\"\r\n\r\n    x = scale_x(star.x)\r\n    y = scale_y(star.y)\r\n    r = star.R\r\n    star.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=star.color)\r\n\r\n\r\ndef create_planet_image(space, planet):\r\n    \"\"\"Создаёт отображаемый объект планеты.\r\n\r\n    Параметры:\r\n\r\n    **space** — холст для рисования.\r\n    **planet** — объект планеты.\r\n    \"\"\"\r\n    pass  # FIXME: сделать как у звезды\r\n\r\n\r\ndef update_system_name(space, system_name):\r\n    \"\"\"Создаёт на холсте текст с названием системы небесных тел.\r\n    Если текст уже был, обновляет его содержание.\r\n\r\n    Параметры:\r\n\r\n    **space** — холст для рисования.\r\n    **system_name** — название системы тел.\r\n    \"\"\"\r\n    space.create_text(30, 80, tag=\"header\", text=system_name, font=header_font)\r\n\r\n\r\ndef update_object_position(space, body):\r\n    \"\"\"Перемещает отображаемый объект на холсте.\r\n\r\n    Параметры:\r\n\r\n    **space** — холст для рисования.\r\n    **body** — тело, которое нужно переместить.\r\n    \"\"\"\r\n    x = scale_x(body.x)\r\n    y = scale_y(body.y)\r\n    r = body.R\r\n    if x + r < 0 or x - r > window_width or y + r < 0 or y - r > window_height:\r\n        space.coords(body.image, window_width + r, window_height + r,\r\n                     window_width + 2*r, window_height + 2*r)  # положить за пределы окна\r\n    space.coords(body.image, x - r, y - r, x + r, y + r)\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    print(\"This module is not for direct call!\")\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_vis.py b/solar_vis.py
+--- a/solar_vis.py	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/solar_vis.py	(date 1719321928613)
+@@ -54,7 +54,8 @@
+     **y** — y-координата модели.
+     """
+ 
+-    return y  # FIXME: not done yet
++    return int(y*scale_factor) + window_height//2  # FIXME: not done yet
++    # return y
+ 
+ 
+ def create_star_image(space, star):
+@@ -80,8 +81,12 @@
+     **space** — холст для рисования.
+     **planet** — объект планеты.
+     """
+-    pass  # FIXME: сделать как у звезды
+-
++    x = scale_x(planet.x)
++    y = scale_y(planet.y)
++    r = planet.R
++    planet.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=planet.color)
++      # FIXME: сделать как у звезды
++  #pass
+ 
+ def update_system_name(space, system_name):
+     """Создаёт на холсте текст с названием системы небесных тел.
+Index: solar_model.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># coding: utf-8\r\n# license: GPLv3\r\n\r\ngravitational_constant = 6.67408E-11\r\n\"\"\"Гравитационная постоянная Ньютона G\"\"\"\r\n\r\n\r\ndef calculate_force(body, space_objects):\r\n    \"\"\"Вычисляет силу, действующую на тело.\r\n\r\n    Параметры:\r\n\r\n    **body** — тело, для которого нужно вычислить дейстующую силу.\r\n    **space_objects** — список объектов, которые воздействуют на тело.\r\n    \"\"\"\r\n\r\n    body.Fx = body.Fy = 0\r\n    for obj in space_objects:\r\n        if body == obj:\r\n            continue  # тело не действует гравитационной силой на само себя!\r\n        r = ((body.x - obj.x)**2 + (body.y - obj.y)**2)**0.5\r\n        body.Fx += 1  # FIXME: нужно вывести формулу...\r\n        body.Fy += 2  # FIXME: нужно вывести формулу...\r\n\r\n\r\ndef move_space_object(body, dt):\r\n    \"\"\"Перемещает тело в соответствии с действующей на него силой.\r\n\r\n    Параметры:\r\n\r\n    **body** — тело, которое нужно переместить.\r\n    \"\"\"\r\n\r\n    ax = body.Fx/body.m\r\n    body.x += 42  # FIXME: не понимаю как менять...\r\n    body.Vx += ax*dt\r\n    # FIXME: not done recalculation of y coordinate!\r\n\r\n\r\ndef recalculate_space_objects_positions(space_objects, dt):\r\n    \"\"\"Пересчитывает координаты объектов.\r\n\r\n    Параметры:\r\n\r\n    **space_objects** — список оьъектов, для которых нужно пересчитать координаты.\r\n    **dt** — шаг по времени\r\n    \"\"\"\r\n\r\n    for body in space_objects:\r\n        calculate_force(body, space_objects)\r\n    for body in space_objects:\r\n        move_space_object(body, dt)\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    print(\"This module is not for direct call!\")\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_model.py b/solar_model.py
+--- a/solar_model.py	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/solar_model.py	(date 1719080226215)
+@@ -19,8 +19,9 @@
+         if body == obj:
+             continue  # тело не действует гравитационной силой на само себя!
+         r = ((body.x - obj.x)**2 + (body.y - obj.y)**2)**0.5
+-        body.Fx += 1  # FIXME: нужно вывести формулу...
+-        body.Fy += 2  # FIXME: нужно вывести формулу...
++        F = (gravitational_constant * body.m * obj.m) / r**2                         # v0.2
++        body.Fx += F * ((obj.x - body.x) / r)  # FIXME: нужно вывести формулу...
++        body.Fy += F * ((obj.y - body.y) / r)  # FIXME: нужно вывести формулу...
+ 
+ 
+ def move_space_object(body, dt):
+@@ -32,10 +33,15 @@
+     """
+ 
+     ax = body.Fx/body.m
+-    body.x += 42  # FIXME: не понимаю как менять...
+-    body.Vx += ax*dt
++    body.Vx += ax * dt            # v0.2
++    body.x += body.Vx * dt
++    # FIXME: не понимаю как менять...
+     # FIXME: not done recalculation of y coordinate!
+ 
++    ay = body.Fy/body.m
++    body.Vy += ay * dt
++    body.y += body.Vy * dt
++
+ 
+ def recalculate_space_objects_positions(space_objects, dt):
+     """Пересчитывает координаты объектов.
+Index: READ.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#v0.1(roma)\r\n\r\nFixed read_space_objects_data_from_file(input_filename) function\r\n  Added: object listing for planet\r\n\r\nFixed parse_star_parameters(line, star) function\r\n  Added: setting parameters for Star() objects\r\n\r\nFixed parse_planet_parameters(line, planet) function\r\n  Added: setting parameters for Planet() objects\r\n\r\nAdded test.py for checking mistakes\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/READ.txt b/READ.txt
+--- a/READ.txt	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/READ.txt	(date 1719322770993)
+@@ -1,12 +1,1 @@
+-#v0.1(roma)
+-
+-Fixed read_space_objects_data_from_file(input_filename) function
+-  Added: object listing for planet
+-
+-Fixed parse_star_parameters(line, star) function
+-  Added: setting parameters for Star() objects
+-
+-Fixed parse_planet_parameters(line, planet) function
+-  Added: setting parameters for Planet() objects
+-
+-Added test.py for checking mistakes
++Hi there!
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"6959f698-2db7-4997-aed0-ad431fdd826f\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/misc.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/misc.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_input.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/solar_input.py\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <favorite-branches>\r\n      <branch-storage>\r\n        <map>\r\n          <entry type=\"LOCAL\">\r\n            <value>\r\n              <list>\r\n                <branch-info repo=\"$PROJECT_DIR$\" source=\"roma\" />\r\n              </list>\r\n            </value>\r\n          </entry>\r\n        </map>\r\n      </branch-storage>\r\n    </favorite-branches>\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"4aa2650dbdd58488a9ec7d62c638d89e0dbed696\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2i94QcTSFXd2xV0v55x70CofMa6\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;roma&quot;\r\n  }\r\n}</component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"6959f698-2db7-4997-aed0-ad431fdd826f\" name=\"Changes\" comment=\"\" />\r\n      <created>1718889445018</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1718889445018</updated>\r\n    </task>\r\n    <servers />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/.idea/workspace.xml	(date 1719322992435)
+@@ -5,9 +5,13 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="6959f698-2db7-4997-aed0-ad431fdd826f" name="Changes" comment="">
+-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/READ.txt" beforeDir="false" afterPath="$PROJECT_DIR$/READ.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/solar_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_input.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/solar_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_model.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/solar_vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_vis.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+Index: test.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># v0.1\r\n\r\n#parse_star_parameters\r\n\r\nfrom solar_objects import Star, Planet\r\nwith open(\"solar_system.txt\") as input_file:\r\n    for line in input_file:\r\n        if len(line.strip()) == 0 or line[0] == '#':\r\n            continue\r\n        object_type = line.split()[0].lower()\r\n        if object_type == \"star\":\r\n            print(line)\r\n            star = Star()\r\n            star.R = line.split()[1]\r\n            star.color = line.split()[2]\r\n            star.m = line.split()[3]\r\n            star.x = line.split()[4]\r\n            star.y = line.split()[5]\r\n            star.vx = line.split()[6]\r\n            star.vy = line.split()[7]\r\n            print(star.type, star.R, star.color, star.m, star.x, star.y, star.Vx, star.Vy)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test.py b/test.py
+--- a/test.py	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/test.py	(date 1719059841233)
+@@ -3,19 +3,80 @@
+ #parse_star_parameters
+ 
+ from solar_objects import Star, Planet
+-with open("solar_system.txt") as input_file:
+-    for line in input_file:
+-        if len(line.strip()) == 0 or line[0] == '#':
+-            continue
+-        object_type = line.split()[0].lower()
+-        if object_type == "star":
+-            print(line)
+-            star = Star()
+-            star.R = line.split()[1]
+-            star.color = line.split()[2]
+-            star.m = line.split()[3]
+-            star.x = line.split()[4]
+-            star.y = line.split()[5]
+-            star.vx = line.split()[6]
+-            star.vy = line.split()[7]
+-            print(star.type, star.R, star.color, star.m, star.x, star.y, star.Vx, star.Vy)
+\ No newline at end of file
++
++def parse_star_parameters(line, star):
++    """Считывает данные о звезде из строки.
++    Входная строка должна иметь слеюущий формат:
++    Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
++
++    Здесь (x, y) — координаты зведы, (Vx, Vy) — скорость.
++    Пример строки:
++    Star 10 red 1000 1 2 3 4
++
++    Параметры:
++
++    **line** — строка с описание звезды.
++    **star** — объект звезды.
++    """
++                  # v0.1
++    star.R = line.split()[1]
++    star.color = line.split()[2]
++    star.m = line.split()[3]
++    star.x = line.split()[4]
++    star.y = line.split()[5]
++    star.vx = line.split()[6]
++    star.vy = line.split()[7]
++
++
++def parse_planet_parameters(line, planet):
++    """Считывает данные о планете из строки.
++    Предполагается такая строка:
++    Входная строка должна иметь слеюущий формат:
++    Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
++
++    Здесь (x, y) — координаты планеты, (Vx, Vy) — скорость.
++    Пример строки:
++    Planet 10 red 1000 1 2 3 4
++
++    Параметры:
++
++    **line** — строка с описание планеты.
++    **planet** — объект планеты.
++    """
++              #v0.1
++    planet.R = line.split()[1]
++    planet.color = line.split()[2]
++    planet.m = line.split()[3]
++    planet.x = line.split()[4]
++    planet.y = line.split()[5]
++    planet.vx = line.split()[6]
++    planet.vy = line.split()[7]
++
++
++    # pass
++    # FIXME: not done yet...
++
++
++
++
++
++objects = []
++with open("solar_system.txt") as input_file:
++        for line in input_file:
++            if len(line.strip()) == 0 or line[0] == '#':
++                continue  # пустые строки и строки-комментарии пропускаем
++            object_type = line.split()[0].lower()
++            if object_type == "star":  # FIXME: do the same for planet
++                star = Star()
++                parse_star_parameters(line, star)
++                objects.append(star)
++                print(star.R)
++            elif object_type == "planet":  # v0.2
++                planet = Planet()
++                parse_planet_parameters(line, planet)
++                objects.append(planet)
++                print(planet.R)
++            else:
++                print("Unknown space object")
++
++
+Index: .idea/.name
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>solar_main.py
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.name b/.idea/.name
+--- a/.idea/.name	(revision 01a21be3732dc04ea8a0bedaf065698280053bd4)
++++ b/.idea/.name	(date 1719321278719)
+@@ -1,1 +1,1 @@
+-solar_main.py
+\ No newline at end of file
++solar_input.py
+\ No newline at end of file
