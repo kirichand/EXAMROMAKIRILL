@@ -20,7 +20,7 @@ scale_factor = None
 Тип: float
 Мера: количество пикселей на один метр."""
 
-class scale ():
+class scale():
     def calculate_scale_factor(max_distance):
         """Вычисляет значение глобальной переменной **scale_factor** по данной характерной длине"""
         global scale_factor
@@ -56,9 +56,10 @@ class scale ():
 
         return int(y*scale_factor) + window_height//2
 
-class create_image_object():
+
+class update():
     def create_object_image(space, self):
-        """Создаёт отображаемый объект космического тела (звезды или планеты).
+        """Создаёт отображаемый объект космического тела (звезды или планеты спутника).
 
         Параметры:
 
@@ -71,7 +72,6 @@ class create_image_object():
         r = self.R
         self.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=self.color)
 
-class update():
     def system_name(space, system_name):
         """Создаёт на холсте текст с названием системы небесных тел.
         Если текст уже был, обновляет его содержание.

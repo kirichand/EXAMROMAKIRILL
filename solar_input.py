@@ -1,16 +1,15 @@
 # coding: utf-8
 # license: GPLv3
 
-from solar_objects import Star, Planet
+from solar_objects import Star, Planet, Satellite
 class object_parametrs ():
-
     def parse(line, self):
-        """Считывает данные об объекте класса (star,planet) из строки.
+        """Считывает данные об объекте класса (star,planet,satellite) из строки.
         Предполагается такая строка:
         Входная строка должна иметь слеюущий формат:
         Planet <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
 
-        Здесь (x, y) — координаты объекта класса(star,planet), (Vx, Vy) — скорость.
+        Здесь (x, y) — координаты объекта класса(star,planet,satellite), (Vx, Vy) — скорость.
         Пример строки:
         Planet 10 red 1000 1 2 3 4
 
@@ -19,6 +18,7 @@ class object_parametrs ():
         **line** — строка с описание планеты.
         **self** — объект класса.
         """
+
         self.R = float(line.split()[1])
         self.color = line.split()[2]
         self.m = float(line.split()[3])
@@ -26,7 +26,7 @@ class object_parametrs ():
         self.y = float(line.split()[5])
         self.Vx = float(line.split()[6])
         self.Vy = float(line.split()[7])
-    
+
 class file_management ():
    
    def read_space_objects_data_from_file(input_filename):
@@ -54,6 +54,10 @@ class file_management ():
                 planet = Planet()
                 object_parametrs.parse(line, planet)
                 objects.append(planet)
+            elif object_type == "satellite":
+                satellite = Satellite()
+                object_parametrs.parse(line, satellite)
+                objects.append(satellite)
             else:
                 print("Unknown space object")
     return objects

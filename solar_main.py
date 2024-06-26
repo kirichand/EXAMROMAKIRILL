@@ -25,80 +25,82 @@ time_step = None
 space_objects = []
 """Список космических объектов."""
 
+class exe():
+    def execution():
+        """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
+        а также обновляя их положение на экране.
+        Цикличность выполнения зависит от значения глобальной переменной perform_execution.
+        При perform_execution == True функция запрашивает вызов самой себя по таймеру через от 1 мс до 100 мс.
+        """
+        global physical_time
+        global displayed_time
+        physic_realization.recalculate_space_objects_positions(space_objects, time_step.get())
+        for body in space_objects:
+            update.object_position(space, body)
+        physical_time += time_step.get()
+        displayed_time.set("%.1f" % physical_time + " seconds gone")
 
-def execution():
-    """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
-    а также обновляя их положение на экране.
-    Цикличность выполнения зависит от значения глобальной переменной perform_execution.
-    При perform_execution == True функция запрашивает вызов самой себя по таймеру через от 1 мс до 100 мс.
-    """
-    global physical_time
-    global displayed_time
-    recalculate_space_objects_positions(space_objects, time_step.get())
-    for body in space_objects:
-        update_object_position(space, body)
-    physical_time += time_step.get()
-    displayed_time.set("%.1f" % physical_time + " seconds gone")
-
-    if perform_execution:
-        space.after(101 - int(time_speed.get()), execution)
-
-
-def start_execution():
-    """Обработчик события нажатия на кнопку Start.
-    Запускает циклическое исполнение функции execution.
-    """
-    global perform_execution
-    perform_execution = True
-    start_button['text'] = "Pause"
-    start_button['command'] = stop_execution
-
-    execution()
-    print('Started execution...')
+        if perform_execution:
+            space.after(101 - int(time_speed.get()), exe.execution)
 
 
-def stop_execution():
-    """Обработчик события нажатия на кнопку Start.
-    Останавливает циклическое исполнение функции execution.
-    """
-    global perform_execution
-    perform_execution = False
-    start_button['text'] = "Start"
-    start_button['command'] = start_execution
-    print('Paused execution.')
+    def start():
+        """Обработчик события нажатия на кнопку Start.
+        Запускает циклическое исполнение функции execution.
+        """
+        global perform_execution
+        perform_execution = True
+        start_button['text'] = "Pause"
+        start_button['command'] = exe.stop
+
+        exe.execution()
+        print('Started execution...')
 
 
-def open_file_dialog():
-    """Открывает диалоговое окно выбора имени файла и вызывает
-    функцию считывания параметров системы небесных тел из данного файла.
-    Считанные объекты сохраняются в глобальный список space_objects
-    """
-    global space_objects
-    global perform_execution
-    perform_execution = False
-    for obj in space_objects:
-        space.delete(obj.image)  # удаление старых изображений планет
-    in_filename = askopenfilename(filetypes=(("Text file", ".txt"),))
-    space_objects = read_space_objects_data_from_file(in_filename)
-    max_distance = max([max(abs(obj.x), abs(obj.y)) for obj in space_objects])
-    calculate_scale_factor(max_distance)
+    def stop():
+        """Обработчик события нажатия на кнопку Start.
+        Останавливает циклическое исполнение функции execution.
+        """
+        global perform_execution
+        perform_execution = False
+        start_button['text'] = "Start"
+        start_button['command'] = exe.start
+        print('Paused execution.')
 
-    for obj in space_objects:
-        if obj.type == 'star':
-            create_star_image(space, obj)
-        elif obj.type == 'planet':
-            create_planet_image(space, obj)
-        else:
-            raise AssertionError()
+class file_dialog():
+    def open():
+        """Открывает диалоговое окно выбора имени файла и вызывает
+        функцию считывания параметров системы небесных тел из данного файла.
+        Считанные объекты сохраняются в глобальный список space_objects
+        """
+        global space_objects
+        global perform_execution
+        perform_execution = False
+        for obj in space_objects:
+            space.delete(obj.image)  # удаление старых изображений планет
+        in_filename = askopenfilename(filetypes=(("Text file", ".txt"),))
+        space_objects = file_management.read_space_objects_data_from_file(in_filename)
+        max_distance = max([max(abs(obj.x), abs(obj.y)) for obj in space_objects])
+        scale.calculate_scale_factor(max_distance)
+
+        for obj in space_objects:
+            if obj.type == 'star':
+                update.create_object_image(space, obj)
+            elif obj.type == 'planet':
+                update.create_object_image(space, obj)
+            elif obj.type == 'satellite':
+                update.create_object_image(space, obj)
+            else:
+                raise AssertionError()
 
 
-def save_file_dialog():
-    """Открывает диалоговое окно выбора имени файла и вызывает
-    функцию считывания параметров системы небесных тел из данного файла.
-    Считанные объекты сохраняются в глобальный список space_objects
-    """
-    out_filename = asksaveasfilename(filetypes=(("Text file", ".txt"),))
-    write_space_objects_data_to_file(out_filename, space_objects)
+    def save():
+        """Открывает диалоговое окно выбора имени файла и вызывает
+        функцию считывания параметров системы небесных тел из данного файла.
+        Считанные объекты сохраняются в глобальный список space_objects
+        """
+        out_filename = asksaveasfilename(filetypes=(("Text file", ".txt"),))
+        file_management.write_space_objects_data_to_file(out_filename, space_objects)
 
 
 def main():
@@ -123,7 +125,7 @@ def main():
     frame = tkinter.Frame(root)
     frame.pack(side=tkinter.BOTTOM)
 
-    start_button = tkinter.Button(frame, text="Start", command=start_execution, width=6)
+    start_button = tkinter.Button(frame, text="Start", command=exe.start, width=6)
     start_button.pack(side=tkinter.LEFT)
 
     time_step = tkinter.DoubleVar()
@@ -135,9 +137,9 @@ def main():
     scale = tkinter.Scale(frame, variable=time_speed, orient=tkinter.HORIZONTAL)
     scale.pack(side=tkinter.LEFT)
 
-    load_file_button = tkinter.Button(frame, text="Open file...", command=open_file_dialog)
+    load_file_button = tkinter.Button(frame, text="Open file...", command=file_dialog.open)
     load_file_button.pack(side=tkinter.LEFT)
-    save_file_button = tkinter.Button(frame, text="Save to file...", command=save_file_dialog)
+    save_file_button = tkinter.Button(frame, text="Save to file...", command=file_dialog.save)
     save_file_button.pack(side=tkinter.LEFT)
 
     displayed_time = tkinter.StringVar()
