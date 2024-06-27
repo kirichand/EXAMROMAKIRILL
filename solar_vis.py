@@ -3,8 +3,10 @@
 
 """Модуль визуализации.
 Нигде, кроме этого модуля, не используются экранные координаты объектов.
-Функции, создающие гaрафические объекты и перемещающие их на экране, принимают физические координаты
+Функции, создающие графические объекты и перемещающие их на экране, принимают физические координаты
 """
+
+import tkinter as tk
 
 header_font = "Arial-16"
 """Шрифт в заголовке"""
@@ -19,6 +21,9 @@ scale_factor = None
 """Масштабирование экранных координат по отношению к физическим.
 Тип: float
 Мера: количество пикселей на один метр."""
+
+
+
 
 class scale():
     def calculate_scale_factor(max_distance):
@@ -58,6 +63,10 @@ class scale():
 
 
 class update():
+    global res 
+        
+    
+
     def create_object_image(space, self):
         """Создаёт отображаемый объект космического тела (звезды или планеты спутника).
 
@@ -65,12 +74,20 @@ class update():
 
         **space** — холст для рисования.
         **self** — объект космического тела (звезды или планеты).
-        """
 
+        """
+        
         x = scale.scale_x(self.x)
         y = scale.scale_y(self.y)
         r = self.R
         self.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=self.color)
+        self.orbit = []  # массив для хранения координат орбиты
+        self.orbit_lines = []  # массив для хранения линий орбиты
+        
+        
+    
+
+        
 
     def system_name(space, system_name):
         """Создаёт на холсте текст с названием системы небесных тел.
@@ -83,23 +100,58 @@ class update():
         """
         space.create_text(30, 80, tag="header", text=system_name, font=header_font)
 
+    def clear_orbit(space,self):
+        
+        for line in self.orbit_lines:
+            space.delete(line)
+        self.orbit.clear()
+        self.orbit_lines.clear()
+        
+        
+        
+    
+        
+    
 
-    def object_position(space, body):
-        """Перемещает отображаемый объект на холсте.
+    def object_position(space, self,res):
+        
+
+        
+        """Перемещает отображаемый объект на холсте и обновляет его орбиту.
 
         Параметры:
 
         **space** — холст для рисования.
-        **body** — тело, которое нужно переместить.
+        **self** — тело, которое нужно переместить.
         """
-        x = scale.scale_x(body.x)
-        y = scale.scale_y(body.y)
-        r = body.R
+        x = scale.scale_x(self.x)
+        y = scale.scale_y(self.y)
+        r = self.R
         if x + r < 0 or x - r > window_width or y + r < 0 or y - r > window_height:
-            space.coords(body.image, window_width + r, window_height + r,
-                        window_width + 2*r, window_height + 2*r)
-        space.coords(body.image, x - r, y - r, x + r, y + r)
-
-
+            space.coords(self.image, window_width + r, window_height + r,
+                         window_width + 2*r, window_height + 2*r)
+        
+        space.coords(self.image, x - r, y - r, x + r, y + r)
+        
+            # обновляем орбиту
+        
+        if self.orbit and res==True:
+                    previous_x, previous_y = self.orbit[-1]
+                    line = space.create_line(previous_x, previous_y, x, y, fill='white')
+                    self.orbit_lines.append(line)
+        self.orbit.append((x, y))
+        
+            
+            
+            
+            
+            
+            
 if __name__ == "__main__":
+    
     print("This module is not for direct call!")
+
+
+    
+
+

@@ -23,22 +23,35 @@ time_step = None
 Тип: float"""
 
 space_objects = []
+
+
 """Список космических объектов."""
 
 class exe():
+    
     def execution():
         """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
         а также обновляя их положение на экране.
         Цикличность выполнения зависит от значения глобальной переменной perform_execution.
         При perform_execution == True функция запрашивает вызов самой себя по таймеру через от 1 мс до 100 мс.
         """
+        
+        
         global physical_time
         global displayed_time
         physic_realization.recalculate_space_objects_positions(space_objects, time_step.get())
-        for body in space_objects:
-            update.object_position(space, body)
-        physical_time += time_step.get()
-        displayed_time.set("%.1f" % physical_time + " seconds gone")
+        if orbit_button['text']=='show orbits':
+            for body in space_objects:
+                update.object_position(space, body,res=False)
+                update.clear_orbit(space,body)
+                # удаление орбит планет   
+            physical_time += time_step.get()
+            displayed_time.set("%.1f" % physical_time + " seconds gone")
+        elif orbit_button['text']=='delete orbits':
+            for body in space_objects:
+                update.object_position(space, body,res=True)
+            physical_time += time_step.get()
+            displayed_time.set("%.1f" % physical_time + " seconds gone")
 
         if perform_execution:
             space.after(101 - int(time_speed.get()), exe.execution)
@@ -61,11 +74,28 @@ class exe():
         """Обработчик события нажатия на кнопку Start.
         Останавливает циклическое исполнение функции execution.
         """
+       
         global perform_execution
         perform_execution = False
         start_button['text'] = "Start"
         start_button['command'] = exe.start
         print('Paused execution.')
+
+
+
+    def clear_orbiit():
+
+        orbit_button['text']='show orbits'
+        orbit_button['command'] = exe.show_orbit
+        
+        
+        
+                    
+    
+    def show_orbit():
+    
+        orbit_button['text']='delete orbits'
+        orbit_button['command'] = exe.clear_orbiit
 
 class file_dialog():
     def open():
@@ -73,11 +103,19 @@ class file_dialog():
         функцию считывания параметров системы небесных тел из данного файла.
         Считанные объекты сохраняются в глобальный список space_objects
         """
+        
         global space_objects
         global perform_execution
         perform_execution = False
         for obj in space_objects:
-            space.delete(obj.image)  # удаление старых изображений планет
+            
+
+            space.delete(obj.image)
+            # удаление старых изображений планет
+    
+           
+            
+               
         in_filename = askopenfilename(filetypes=(("Text file", ".txt"),))
         space_objects = file_management.read_space_objects_data_from_file(in_filename)
         max_distance = max([max(abs(obj.x), abs(obj.y)) for obj in space_objects])
@@ -88,10 +126,19 @@ class file_dialog():
                 update.create_object_image(space, obj)
             elif obj.type == 'planet':
                 update.create_object_image(space, obj)
+                
             elif obj.type == 'satellite':
                 update.create_object_image(space, obj)
             else:
                 raise AssertionError()
+        
+    
+        
+        
+        
+
+
+                
 
 
     def save():
@@ -113,6 +160,7 @@ def main():
     global time_speed
     global space
     global start_button
+    global orbit_button
 
     print('Modelling started!')
     physical_time = 0
@@ -127,6 +175,9 @@ def main():
 
     start_button = tkinter.Button(frame, text="Start", command=exe.start, width=6)
     start_button.pack(side=tkinter.LEFT)
+
+    orbit_button = tkinter.Button(frame,text = "delete orbits",command=exe.clear_orbiit,width=6)
+    orbit_button.pack(side=tkinter.LEFT)
 
     time_step = tkinter.DoubleVar()
     time_step.set(1)
