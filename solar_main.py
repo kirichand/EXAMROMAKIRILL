@@ -1,6 +1,6 @@
 # coding: utf-8
 # license: GPLv3
-
+import math
 import tkinter
 from tkinter.filedialog import *
 from solar_vis import *
@@ -42,20 +42,54 @@ class exe():
         physic_realization.recalculate_space_objects_positions(space_objects, time_step.get())
         if orbit_button['text']=='show orbits':
             for body in space_objects:
-                update.object_position(space, body,res=False)
+                update.object_position(space, body)
+                update.update_orbit(space, body,res=False)
                 update.clear_orbit(space,body)
+
                 # удаление орбит планет   
             physical_time += time_step.get()
             displayed_time.set("%.1f" % physical_time + " seconds gone")
         elif orbit_button['text']=='delete orbits':
+            check=0
             for body in space_objects:
-                update.object_position(space, body,res=True)
+               
+               #### check+=1
+               
+              ####  if check  1:
+                ##update.clear_orbit(space,body)
+               
+                update.object_position(space, body)
+                update.update_orbit(space,body,res=True)
+                
+                
             physical_time += time_step.get()
             displayed_time.set("%.1f" % physical_time + " seconds gone")
-
         if perform_execution:
             space.after(101 - int(time_speed.get()), exe.execution)
 
+    def draw_orbit_stop():
+        for body in space_objects:
+           # update.clear_orbit(space,body)
+            update.optimisation(space,body)
+            
+            
+        opti_button['text'] = "Start draw"
+        opti_button['command'] = exe.draw_orbit_start
+    
+    def draw_orbit_start():
+        for body in space_objects:
+               
+               #### check+=1
+               
+              ####  if check  1:
+                update.object_position(space, body)
+                update.clear_orbit(space,body)
+                
+                
+                
+        opti_button['text'] = "Stop draw"
+        opti_button['command'] = exe.draw_orbit_stop
+        
 
     def start():
         """Обработчик события нажатия на кнопку Start.
@@ -161,6 +195,7 @@ def main():
     global space
     global start_button
     global orbit_button
+    global opti_button
 
     print('Modelling started!')
     physical_time = 0
@@ -178,6 +213,9 @@ def main():
 
     orbit_button = tkinter.Button(frame,text = "delete orbits",command=exe.clear_orbiit,width=6)
     orbit_button.pack(side=tkinter.LEFT)
+
+    """ opti_button = tkinter.Button(frame,text = "Stop draw",command=exe.draw_orbit_stop,width=6)
+    opti_button.pack(side=tkinter.LEFT)"""
 
     time_step = tkinter.DoubleVar()
     time_step.set(1)

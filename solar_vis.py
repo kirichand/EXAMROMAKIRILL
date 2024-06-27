@@ -5,7 +5,7 @@
 Нигде, кроме этого модуля, не используются экранные координаты объектов.
 Функции, создающие графические объекты и перемещающие их на экране, принимают физические координаты
 """
-
+import math
 import tkinter as tk
 
 header_font = "Arial-16"
@@ -60,6 +60,21 @@ class scale():
         """
 
         return int(y*scale_factor) + window_height//2
+    
+
+    def scale_min_distance(min_distance):
+        """Возвращает экранную **y** координату по **y** координате модели.
+        Принимает вещественное число, возвращает целое число.
+        В случае выхода **y** координаты за пределы экрана возвращает
+        координату, лежащую за пределами холста.
+        Направление оси развёрнуто, чтобы у модели ось **y** смотрела вверх.
+
+        Параметры:
+
+        **y** — y-координата модели.
+        """
+
+        return int(min_distance*scale_factor) + window_height//2
 
 
 class update():
@@ -68,6 +83,8 @@ class update():
     
 
     def create_object_image(space, self):
+        global previous_x
+        global previous_y
         """Создаёт отображаемый объект космического тела (звезды или планеты спутника).
 
         Параметры:
@@ -79,14 +96,19 @@ class update():
         
         x = scale.scale_x(self.x)
         y = scale.scale_y(self.y)
+        previous_x=x
+        previous_y=y
         r = self.R
         self.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=self.color)
         self.orbit = []  # массив для хранения координат орбиты
         self.orbit_lines = []  # массив для хранения линий орбиты
-        
+        self.min_distance = 1
         
     
-
+        
+    
+    
+         
         
 
     def system_name(space, system_name):
@@ -106,14 +128,23 @@ class update():
             space.delete(line)
         self.orbit.clear()
         self.orbit_lines.clear()
-        
-        
-        
     
+    
+    
+        
+    def optimisation(space,self):
+        global index_to_delete
+        n = 1
+        index_to_delete = n
+        while index_to_delete < len(self.orbit):
+            del self.orbit[index_to_delete]
+            del self.orbit_lines[index_to_delete]
+            
+            index_to_delete += n
         
     
 
-    def object_position(space, self,res):
+    def object_position(space, self):
         
 
         
@@ -132,14 +163,41 @@ class update():
                          window_width + 2*r, window_height + 2*r)
         
         space.coords(self.image, x - r, y - r, x + r, y + r)
+
+
+    def update_orbit(space,self,res):
+        x = scale.scale_x(self.x)
+        y = scale.scale_y(self.y)
         
             # обновляем орбиту
         
         if self.orbit and res==True:
+            
+            previous_x, previous_y = self.orbit[-1]
+            distance = math.sqrt((x - previous_x) ** 2 + (y - previous_y) ** 2)
+        
+        
+            if distance > self.min_distance:
+                line = space.create_line(previous_x, previous_y, x, y, fill='white')
+                self.orbit_lines.append(line)
+                if distance <= self.min_distance:
+                    for line in self.orbit_lines:
+                        space.delete(line)
+        self.orbit.append((x, y))
+
+            
+            
+
+
+
+        """
+            if self.orbit and res==True:
                     previous_x, previous_y = self.orbit[-1]
                     line = space.create_line(previous_x, previous_y, x, y, fill='white')
                     self.orbit_lines.append(line)
-        self.orbit.append((x, y))
+        self.orbit.append((x, y))"""
+
+        
         
             
             
