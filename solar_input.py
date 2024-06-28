@@ -2,7 +2,7 @@
 # license: GPLv3
 
 from solar_objects import Star, Planet, Satellite
-class object_parametrs ():
+class object_parametrs():
     def parse(line, self):
         """Считывает данные об объекте класса (star,planet,satellite) из строки.
         Предполагается такая строка:
@@ -27,7 +27,7 @@ class object_parametrs ():
         self.Vx = float(line.split()[6])
         self.Vy = float(line.split()[7])
 
-class file_management ():
+class file_management():
    
    def read_space_objects_data_from_file(input_filename):
     """Cчитывает данные о космических объектах из файла, создаёт сами объекты

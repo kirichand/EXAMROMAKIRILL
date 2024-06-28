@@ -121,11 +121,7 @@ class exe():
 
         orbit_button['text']='show orbits'
         orbit_button['command'] = exe.show_orbit
-        
-        
-        
-                    
-    
+
     def show_orbit():
     
         orbit_button['text']='delete orbits'
@@ -165,15 +161,6 @@ class file_dialog():
                 update.create_object_image(space, obj)
             else:
                 raise AssertionError()
-        
-    
-        
-        
-        
-
-
-                
-
 
     def save():
         """Открывает диалоговое окно выбора имени файла и вызывает

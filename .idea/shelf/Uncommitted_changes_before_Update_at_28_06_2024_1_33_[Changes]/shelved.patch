@@ -1,0 +1,570 @@
+Index: solar_main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># coding: utf-8\r\n# license: GPLv3\r\n\r\nimport tkinter\r\nfrom tkinter.filedialog import *\r\nfrom solar_vis import *\r\nfrom solar_model import *\r\nfrom solar_input import *\r\n\r\nperform_execution = False\r\n\"\"\"Флаг цикличности выполнения расчёта\"\"\"\r\n\r\nphysical_time = 0\r\n\"\"\"Физическое время от начала расчёта.\r\nТип: float\"\"\"\r\n\r\ndisplayed_time = None\r\n\"\"\"Отображаемое на экране время.\r\nТип: переменная tkinter\"\"\"\r\n\r\ntime_step = None\r\n\"\"\"Шаг по времени при моделировании.\r\nТип: float\"\"\"\r\n\r\nspace_objects = []\r\n\r\n\r\n\"\"\"Список космических объектов.\"\"\"\r\n\r\nclass exe():\r\n    \r\n    def execution():\r\n        \"\"\"Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,\r\n        а также обновляя их положение на экране.\r\n        Цикличность выполнения зависит от значения глобальной переменной perform_execution.\r\n        При perform_execution == True функция запрашивает вызов самой себя по таймеру через от 1 мс до 100 мс.\r\n        \"\"\"\r\n        \r\n        \r\n        global physical_time\r\n        global displayed_time\r\n        physic_realization.recalculate_space_objects_positions(space_objects, time_step.get())\r\n        if orbit_button['text']=='show orbits':\r\n            for body in space_objects:\r\n                update.object_position(space, body,res=False)\r\n                update.clear_orbit(space,body)\r\n                # удаление орбит планет   \r\n            physical_time += time_step.get()\r\n            displayed_time.set(\"%.1f\" % physical_time + \" seconds gone\")\r\n        elif orbit_button['text']=='delete orbits':\r\n            for body in space_objects:\r\n                update.object_position(space, body,res=True)\r\n            physical_time += time_step.get()\r\n            displayed_time.set(\"%.1f\" % physical_time + \" seconds gone\")\r\n\r\n        if perform_execution:\r\n            space.after(101 - int(time_speed.get()), exe.execution)\r\n\r\n\r\n    def start():\r\n        \"\"\"Обработчик события нажатия на кнопку Start.\r\n        Запускает циклическое исполнение функции execution.\r\n        \"\"\"\r\n        global perform_execution\r\n        perform_execution = True\r\n        start_button['text'] = \"Pause\"\r\n        start_button['command'] = exe.stop\r\n\r\n        exe.execution()\r\n        print('Started execution...')\r\n\r\n\r\n    def stop():\r\n        \"\"\"Обработчик события нажатия на кнопку Start.\r\n        Останавливает циклическое исполнение функции execution.\r\n        \"\"\"\r\n       \r\n        global perform_execution\r\n        perform_execution = False\r\n        start_button['text'] = \"Start\"\r\n        start_button['command'] = exe.start\r\n        print('Paused execution.')\r\n\r\n\r\n\r\n    def clear_orbiit():\r\n\r\n        orbit_button['text']='show orbits'\r\n        orbit_button['command'] = exe.show_orbit\r\n        \r\n        \r\n        \r\n                    \r\n    \r\n    def show_orbit():\r\n    \r\n        orbit_button['text']='delete orbits'\r\n        orbit_button['command'] = exe.clear_orbiit\r\n\r\nclass file_dialog():\r\n    def open():\r\n        \"\"\"Открывает диалоговое окно выбора имени файла и вызывает\r\n        функцию считывания параметров системы небесных тел из данного файла.\r\n        Считанные объекты сохраняются в глобальный список space_objects\r\n        \"\"\"\r\n        \r\n        global space_objects\r\n        global perform_execution\r\n        perform_execution = False\r\n        for obj in space_objects:\r\n            \r\n\r\n            space.delete(obj.image)\r\n            # удаление старых изображений планет\r\n    \r\n           \r\n            \r\n               \r\n        in_filename = askopenfilename(filetypes=((\"Text file\", \".txt\"),))\r\n        space_objects = file_management.read_space_objects_data_from_file(in_filename)\r\n        max_distance = max([max(abs(obj.x), abs(obj.y)) for obj in space_objects])\r\n        scale.calculate_scale_factor(max_distance)\r\n\r\n        for obj in space_objects:\r\n            if obj.type == 'star':\r\n                update.create_object_image(space, obj)\r\n            elif obj.type == 'planet':\r\n                update.create_object_image(space, obj)\r\n                \r\n            elif obj.type == 'satellite':\r\n                update.create_object_image(space, obj)\r\n            else:\r\n                raise AssertionError()\r\n        \r\n    \r\n        \r\n        \r\n        \r\n\r\n\r\n                \r\n\r\n\r\n    def save():\r\n        \"\"\"Открывает диалоговое окно выбора имени файла и вызывает\r\n        функцию считывания параметров системы небесных тел из данного файла.\r\n        Считанные объекты сохраняются в глобальный список space_objects\r\n        \"\"\"\r\n        out_filename = asksaveasfilename(filetypes=((\"Text file\", \".txt\"),))\r\n        file_management.write_space_objects_data_to_file(out_filename, space_objects)\r\n\r\n\r\ndef main():\r\n    \"\"\"Главная функция главного модуля.\r\n    Создаёт объекты графического дизайна библиотеки tkinter: окно, холст, фрейм с кнопками, кнопки.\r\n    \"\"\"\r\n    global physical_time\r\n    global displayed_time\r\n    global time_step\r\n    global time_speed\r\n    global space\r\n    global start_button\r\n    global orbit_button\r\n\r\n    print('Modelling started!')\r\n    physical_time = 0\r\n\r\n    root = tkinter.Tk()\r\n    # космическое пространство отображается на холсте типа Canvas\r\n    space = tkinter.Canvas(root, width=window_width, height=window_height, bg=\"black\")\r\n    space.pack(side=tkinter.TOP)\r\n    # нижняя панель с кнопками\r\n    frame = tkinter.Frame(root)\r\n    frame.pack(side=tkinter.BOTTOM)\r\n\r\n    start_button = tkinter.Button(frame, text=\"Start\", command=exe.start, width=6)\r\n    start_button.pack(side=tkinter.LEFT)\r\n\r\n    orbit_button = tkinter.Button(frame,text = \"delete orbits\",command=exe.clear_orbiit,width=6)\r\n    orbit_button.pack(side=tkinter.LEFT)\r\n\r\n    time_step = tkinter.DoubleVar()\r\n    time_step.set(1)\r\n    time_step_entry = tkinter.Entry(frame, textvariable=time_step)\r\n    time_step_entry.pack(side=tkinter.LEFT)\r\n\r\n    time_speed = tkinter.DoubleVar()\r\n    scale = tkinter.Scale(frame, variable=time_speed, orient=tkinter.HORIZONTAL)\r\n    scale.pack(side=tkinter.LEFT)\r\n\r\n    load_file_button = tkinter.Button(frame, text=\"Open file...\", command=file_dialog.open)\r\n    load_file_button.pack(side=tkinter.LEFT)\r\n    save_file_button = tkinter.Button(frame, text=\"Save to file...\", command=file_dialog.save)\r\n    save_file_button.pack(side=tkinter.LEFT)\r\n\r\n    displayed_time = tkinter.StringVar()\r\n    displayed_time.set(str(physical_time) + \" seconds gone\")\r\n    time_label = tkinter.Label(frame, textvariable=displayed_time, width=30)\r\n    time_label.pack(side=tkinter.RIGHT)\r\n\r\n    root.mainloop()\r\n    print('Modelling finished!')\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_main.py b/solar_main.py
+--- a/solar_main.py	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/solar_main.py	(date 1719484532397)
+@@ -87,11 +87,7 @@
+ 
+         orbit_button['text']='show orbits'
+         orbit_button['command'] = exe.show_orbit
+-        
+-        
+-        
+-                    
+-    
++
+     def show_orbit():
+     
+         orbit_button['text']='delete orbits'
+Index: solar_vis.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># coding: utf-8\r\n# license: GPLv3\r\n\r\n\"\"\"Модуль визуализации.\r\nНигде, кроме этого модуля, не используются экранные координаты объектов.\r\nФункции, создающие графические объекты и перемещающие их на экране, принимают физические координаты\r\n\"\"\"\r\n\r\nimport tkinter as tk\r\n\r\nheader_font = \"Arial-16\"\r\n\"\"\"Шрифт в заголовке\"\"\"\r\n\r\nwindow_width = 800\r\n\"\"\"Ширина окна\"\"\"\r\n\r\nwindow_height = 800\r\n\"\"\"Высота окна\"\"\"\r\n\r\nscale_factor = None\r\n\"\"\"Масштабирование экранных координат по отношению к физическим.\r\nТип: float\r\nМера: количество пикселей на один метр.\"\"\"\r\n\r\n\r\n\r\n\r\nclass scale():\r\n    def calculate_scale_factor(max_distance):\r\n        \"\"\"Вычисляет значение глобальной переменной **scale_factor** по данной характерной длине\"\"\"\r\n        global scale_factor\r\n        scale_factor = 0.4*min(window_height, window_width)/max_distance\r\n        print('Scale factor:', scale_factor)\r\n\r\n\r\n    def scale_x(x):\r\n        \"\"\"Возвращает экранную **x** координату по **x** координате модели.\r\n        Принимает вещественное число, возвращает целое число.\r\n        В случае выхода **x** координаты за пределы экрана возвращает\r\n        координату, лежащую за пределами холста.\r\n\r\n        Параметры:\r\n\r\n        **x** — x-координата модели.\r\n        \"\"\"\r\n\r\n        return int(x*scale_factor) + window_width//2\r\n\r\n\r\n    def scale_y(y):\r\n        \"\"\"Возвращает экранную **y** координату по **y** координате модели.\r\n        Принимает вещественное число, возвращает целое число.\r\n        В случае выхода **y** координаты за пределы экрана возвращает\r\n        координату, лежащую за пределами холста.\r\n        Направление оси развёрнуто, чтобы у модели ось **y** смотрела вверх.\r\n\r\n        Параметры:\r\n\r\n        **y** — y-координата модели.\r\n        \"\"\"\r\n\r\n        return int(y*scale_factor) + window_height//2\r\n\r\n\r\nclass update():\r\n    global res \r\n        \r\n    \r\n\r\n    def create_object_image(space, self):\r\n        \"\"\"Создаёт отображаемый объект космического тела (звезды или планеты спутника).\r\n\r\n        Параметры:\r\n\r\n        **space** — холст для рисования.\r\n        **self** — объект космического тела (звезды или планеты).\r\n\r\n        \"\"\"\r\n        \r\n        x = scale.scale_x(self.x)\r\n        y = scale.scale_y(self.y)\r\n        r = self.R\r\n        self.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=self.color)\r\n        self.orbit = []  # массив для хранения координат орбиты\r\n        self.orbit_lines = []  # массив для хранения линий орбиты\r\n        \r\n        \r\n    \r\n\r\n        \r\n\r\n    def system_name(space, system_name):\r\n        \"\"\"Создаёт на холсте текст с названием системы небесных тел.\r\n        Если текст уже был, обновляет его содержание.\r\n\r\n        Параметры:\r\n\r\n        **space** — холст для рисования.\r\n        **system_name** — название системы тел.\r\n        \"\"\"\r\n        space.create_text(30, 80, tag=\"header\", text=system_name, font=header_font)\r\n\r\n    def clear_orbit(space,self):\r\n        \r\n        for line in self.orbit_lines:\r\n            space.delete(line)\r\n        self.orbit.clear()\r\n        self.orbit_lines.clear()\r\n        \r\n        \r\n        \r\n    \r\n        \r\n    \r\n\r\n    def object_position(space, self,res):\r\n        \r\n\r\n        \r\n        \"\"\"Перемещает отображаемый объект на холсте и обновляет его орбиту.\r\n\r\n        Параметры:\r\n\r\n        **space** — холст для рисования.\r\n        **self** — тело, которое нужно переместить.\r\n        \"\"\"\r\n        x = scale.scale_x(self.x)\r\n        y = scale.scale_y(self.y)\r\n        r = self.R\r\n        if x + r < 0 or x - r > window_width or y + r < 0 or y - r > window_height:\r\n            space.coords(self.image, window_width + r, window_height + r,\r\n                         window_width + 2*r, window_height + 2*r)\r\n        \r\n        space.coords(self.image, x - r, y - r, x + r, y + r)\r\n        \r\n            # обновляем орбиту\r\n        \r\n        if self.orbit and res==True:\r\n                    previous_x, previous_y = self.orbit[-1]\r\n                    line = space.create_line(previous_x, previous_y, x, y, fill='white')\r\n                    self.orbit_lines.append(line)\r\n        self.orbit.append((x, y))\r\n        \r\n            \r\n            \r\n            \r\n            \r\n            \r\n            \r\nif __name__ == \"__main__\":\r\n    \r\n    print(\"This module is not for direct call!\")\r\n\r\n\r\n    \r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_vis.py b/solar_vis.py
+--- a/solar_vis.py	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/solar_vis.py	(date 1719504383588)
+@@ -11,10 +11,10 @@
+ header_font = "Arial-16"
+ """Шрифт в заголовке"""
+ 
+-window_width = 800
++window_width = 1200
+ """Ширина окна"""
+ 
+-window_height = 800
++window_height = 900
+ """Высота окна"""
+ 
+ scale_factor = None
+@@ -59,13 +59,12 @@
+         **y** — y-координата модели.
+         """
+ 
+-        return int(y*scale_factor) + window_height//2
++        return -int(y*scale_factor) + window_height//2
+ 
+ 
+ class update():
+-    global res 
+-        
+-    
++
++    global res
+ 
+     def create_object_image(space, self):
+         """Создаёт отображаемый объект космического тела (звезды или планеты спутника).
+@@ -83,12 +82,7 @@
+         self.image = space.create_oval([x - r, y - r], [x + r, y + r], fill=self.color)
+         self.orbit = []  # массив для хранения координат орбиты
+         self.orbit_lines = []  # массив для хранения линий орбиты
+-        
+-        
+-    
+ 
+-        
+-
+     def system_name(space, system_name):
+         """Создаёт на холсте текст с названием системы небесных тел.
+         Если текст уже был, обновляет его содержание.
+@@ -101,22 +95,12 @@
+         space.create_text(30, 80, tag="header", text=system_name, font=header_font)
+ 
+     def clear_orbit(space,self):
+-        
+         for line in self.orbit_lines:
+             space.delete(line)
+         self.orbit.clear()
+         self.orbit_lines.clear()
+-        
+-        
+-        
+-    
+-        
+-    
+ 
+     def object_position(space, self,res):
+-        
+-
+-        
+         """Перемещает отображаемый объект на холсте и обновляет его орбиту.
+ 
+         Параметры:
+Index: bilet4.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Солнечная система\r\nStar 2 red 10 0 0 0 0\r\n\r\n# Меркурий\r\nPlanet 2 orange 1 1 0 0 1\r\n\r\n# Венера\r\nPlanet 5 blue 1.5  10 0 0 2\r\n\r\n# Земля\r\nPlanet 5 green 2 15 0 0 3\r\n\r\n#Марс\r\nPlanet 3 red 2.5 17 0 0 4\r\n\r\n# Юпитер\r\nPlanet 20 yellow 3 19 0 0 5\r\n\r\n# Сатурн\r\nPlanet 15 white  3.5 21 0 0 6\r\n\r\n# Уран\r\n#Planet 8 gray 4 23 0 0 7\r\n\r\n# Нептун\r\n#Planet 7 blue 4.5 25 0 0 8\r\n\r\n# Меркурий\r\nPlanet 2 orange 5 27 0 0 9\r\n\r\n# Венера\r\nPlanet 5 blue 5.5 29 0 0 10\r\n\r\n# Земля\r\nPlanet 5 green 6 32 0 0 11\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/bilet4.txt b/bilet4.txt
+--- a/bilet4.txt	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/bilet4.txt	(date 1719527329884)
+@@ -1,36 +1,133 @@
+-# Солнечная система
+-Star 2 red 10 0 0 0 0
++#Система1
++
++#Звезда
++Star 2 red 1.98892E30 0 0 0 0
++
++#Орбита1
++#Планета1
++Planet 3 orange 9E23 200E9 0 0 26E3
++
++#Планета2
++Planet 3 orange 9E23 -200E9 0 0 -26E3
++
++#Планета3
++Planet 3 orange 9E23 0 200E9 -26E3 0
++
++#Планета4
++Planet 3 orange 9E23 0 -200E9 26E3 0
++
++#Орбита2
++#Планета5
++Planet 3 blue 18E23 400E9 0 0 18E3
++
++#Планета6
++Planet 3 blue 18E23 -400E9 0 0 -18E3
++
++#Планета7
++Planet 3 blue 18E23 0 400E9 -18E3 0
++
++#Планета8
++Planet 3 blue 18E23 0 -400E9 18E3 0
++
++#Орбита3
++#Планета9
++Planet 3 green 27E23 600E9 0 0 14.87E3
++
++#Планета10
++Planet 3 green 27E23 -600E9 0 0 -14.87E3
++
++#Планета11
++Planet 3 green 27E23 0 600E9 -14.87E3 0
++
++#Планета12
++Planet 3 green 27E23 0 -600E9 14.87E3 0
++
++#Орбита4
++#Планета13
++Planet 3 red 36E23 800E9 0 0 12.863E3
++
++#Планета14
++Planet 3 red 36E23 -800E9 0 0 -12.863E3
++
++#Планета15
++Planet 3 red 36E23 0 800E9 -12.863E3 0
++
++#Планета16
++Planet 3 red 36E23 0 -800E9 12.863E3 0
++
++#Орбита5
++#Планета17
++Planet 3 yellow 42E23 1100E9 0 0 10.9E3
++
++#Планета18
++Planet 3 yellow 42E23 -1100E9 0 0 -10.9E3
++
++#Планета19
++Planet 3 yellow 42E23 0 1100E9 -10.9E3 0
++
++#Планета20
++Planet 3 yellow 42E23 0 -1100E9 10.9E3 0
++
++#Орбита6
++#Планета21
++Planet 3 white 54E23 1400E9 0 0 10.6E3
++
++#Планета22
++Planet 3 white 54E23 -1400E9 0 0 -10.6E3
++
++#Планета23
++Planet 3 white 54E23 0 1400E9 -10.6E3 0
++
++#Планета24
++Planet 3 white 54E23 0 -1400E9 10.6E3 0
++
++#Орбита7
++#Планета25
++Planet 3 gray 63E23 1700E9 0 0 9.9E3
++
++#Планета26
++Planet 3 gray 63E23 -1700E9 0 0 -9.9E3
++
++#Планета27
++Planet 3 gray 63E23 0 1700E9 -9.9E3 0
++
++#Орбита8
++#Планета28
++Planet 3 blue 72E23 2000E9 0 0 9E3
++
++#Планета29
++Planet 3 blue 72E23 -2000E9 0 0 -9E3
++
++#Планета30
++Planet 3 blue 72E23 0 2000E9 -9E3 0
+ 
+-# Меркурий
+-Planet 2 orange 1 1 0 0 1
++#Система2
+ 
+-# Венера
+-Planet 5 blue 1.5  10 0 0 2
++#Звезда
++Star 2 red 1.98892E30 50E11 0 0 0
+ 
+-# Земля
+-Planet 5 green 2 15 0 0 3
++#Система3
+ 
+-#Марс
+-Planet 3 red 2.5 17 0 0 4
++#Звезда
++Star 2 red 1.98892E30 -50E11 0 0 0
+ 
+-# Юпитер
+-Planet 20 yellow 3 19 0 0 5
++#Система4
+ 
+-# Сатурн
+-Planet 15 white  3.5 21 0 0 6
++#Звезда
++Star 2 red 1.98892E30 -50E11 -50E11 0 0 0
+ 
+-# Уран
+-#Planet 8 gray 4 23 0 0 7
++#Система5
+ 
+-# Нептун
+-#Planet 7 blue 4.5 25 0 0 8
++#Звезда
++Star 2 red 1.98892E30 50E11 -50E11 0 0
+ 
+-# Меркурий
+-Planet 2 orange 5 27 0 0 9
++#Система6
+ 
+-# Венера
+-Planet 5 blue 5.5 29 0 0 10
++#Звезда
++Star 2 red 1.98892E30 -50E11 50E11 0 0
+ 
+-# Земля
+-Planet 5 green 6 32 0 0 11
++#Система7
++
++#Звезда
++Star 2 red 1.98892E30 50E11 50E11 0 0
+ 
+Index: .idea/.name
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>solar_main.py
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.name b/.idea/.name
+--- a/.idea/.name	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/.idea/.name	(date 1719516441204)
+@@ -1,1 +1,1 @@
+-solar_main.py
+\ No newline at end of file
++solar_input.py
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"6959f698-2db7-4997-aed0-ad431fdd826f\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/one_satellite.txt\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/one_satellite.txt\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_input.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/solar_input.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_main.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/solar_main.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_mainBAZA.py\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_objects.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/solar_objects.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/solar_vis.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/solar_vis.py\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"kirill\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2i94QcTSFXd2xV0v55x70CofMa6\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"git-widget-placeholder\": \"master\"\r\n  }\r\n}]]></component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"6959f698-2db7-4997-aed0-ad431fdd826f\" name=\"Changes\" comment=\"\" />\r\n      <created>1718889445018</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1718889445018</updated>\r\n    </task>\r\n    <servers />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/.idea/workspace.xml	(date 1719495115220)
+@@ -5,12 +5,11 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="6959f698-2db7-4997-aed0-ad431fdd826f" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/one_satellite.txt" beforeDir="false" afterPath="$PROJECT_DIR$/one_satellite.txt" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/solar_input.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_input.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/bilet4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/bilet4.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/solar_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_main.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/solar_mainBAZA.py" beforeDir="false" />
+-      <change beforePath="$PROJECT_DIR$/solar_objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_objects.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/solar_system.txt" beforeDir="false" afterPath="$PROJECT_DIR$/solar_system.txt" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/solar_vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/solar_vis.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+@@ -34,13 +33,13 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "RunOnceActivity.OpenProjectViewOnStart": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "git-widget-placeholder": "master"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;master&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+   <component name="TaskManager">
+     <task active="true" id="Default" summary="Default task">
+Index: solar_system.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Солнечная система\r\nStar 2 red 1.98892E30 0 0 0 0\r\n\r\n# Меркурий\r\nPlanet 2 orange 3.302E23 57.909E9 0 0 47.87E3\r\n\r\n# Венера\r\nPlanet 5 blue 4.869E24 108.21E9 0 0 35.02E3\r\n\r\n# Земля\r\nPlanet 5 green 5.974E24 149.60E9 0 0 29.76E3\r\n\r\n#Марс\r\nPlanet 3 red 6.419E23 227.94E9 0 0 24.13E3\r\n\r\n# Юпитер\r\nPlanet 20 yellow 1.899E27 778.41E9 0 0 13.07E3\r\n\r\n# Сатурн\r\nPlanet 15 white 5.685E26 1429.4E9 0 0 9.67E3\r\n\r\n# Уран\r\n#Planet 8 gray 8.685E25 2871.0E9 0 0 6.84E3\r\n\r\n# Нептун\r\n#Planet 7 blue 1.024E26 4498.3E9 0 0 5.48E3\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/solar_system.txt b/solar_system.txt
+--- a/solar_system.txt	(revision 9d539ecf0827a17a99c9d6d8e73ea54e48cff129)
++++ b/solar_system.txt	(date 1719495973691)
+@@ -1,26 +1,205 @@
+-# Солнечная система
+-Star 2 red 1.98892E30 0 0 0 0
+-
+-# Меркурий
+-Planet 2 orange 3.302E23 57.909E9 0 0 47.87E3
+-
+-# Венера
+-Planet 5 blue 4.869E24 108.21E9 0 0 35.02E3
+-
+-# Земля
+-Planet 5 green 5.974E24 149.60E9 0 0 29.76E3
+-
+-#Марс
+-Planet 3 red 6.419E23 227.94E9 0 0 24.13E3
+-
+-# Юпитер
+-Planet 20 yellow 1.899E27 778.41E9 0 0 13.07E3
+-
+-# Сатурн
+-Planet 15 white 5.685E26 1429.4E9 0 0 9.67E3
+-
+-# Уран
+-#Planet 8 gray 8.685E25 2871.0E9 0 0 6.84E3
+-
+-# Нептун
+-#Planet 7 blue 1.024E26 4498.3E9 0 0 5.48E3
++Star 8 red 1988920000000000000000000000000 0 0 0 0
++Planet 8 gray 924958423464375567678387 119713287538 24961783782 -672518234950 3225305111893
++Planet 4 white 8765156673427826976252140 -125698720064 -30791488436 762004098449 -3110695348664
++Planet 8 white 2505394973919232920242740 -74890330872 -91253483979 2592124293151 -2127316541925
++Planet 5 white 202268369156977305894994 -80927923704 89032354073 2457897607095 2234160290289
++Planet 8 red 3377142807440121395708281 79669301192 228945397391 -2210076169435 769070817790
++Planet 2 yellow 8007083732161517231371184 58191623820 -202388724253 -2412898789661 -693766410171
++Planet 7 white 3902808731020057652283493 -17532241880 -244795900320 2319721292983 -166138055219
++Planet 7 orange 7812523714954006506451251 213890574122 -46327000799 -521336828777 -2406998763018
++Planet 5 white 2703813548066305266309952 281758862493 -160644201104 -1002015132525 -1757465516967
++Planet 6 white 9513792915908543626247145 129693841844 -283652825875 -1876185401950 -857843358482
++Satellite 4 blue 121009483955399371108306 131308614146 -282360367237 0 2062999489330
++Satellite 8 blue 415497816204737683767982 128056126209 -282163963097 0 2062999489649
++Planet 2 green 867695459273260172722253 276798024923 -116516499883 -815664001342 -1937701396792
++Planet 2 red 5039783089732897131928832 -284410908434 -127957517190 846467825703 -1881442282989
++Planet 7 orange 8683257014490351528329256 207832018813 369206227177 -1542451923467 868270558781
++Planet 8 red 4837446270241436719928471 97465721471 -398884294511 -1746594901574 -426773213542
++Planet 5 yellow 7434565051465909689435658 -243897217288 -321233863095 1444877309737 -1097024926862
++Planet 7 yellow 8712458946197536570889056 402892770932 -156668094165 -635089059118 -1633215698319
++Planet 3 blue 220455866199604175982451 144274908182 -503130122609 -1530823273043 -438970710034
++Planet 5 orange 901566746892824795761050 -498711347901 -151058405480 462683394515 -1527524791457
++Planet 2 red 8777406736507035697774810 512753439827 60324553265 -187351932727 1592475082929
++Planet 2 green 2349717166794262319195641 361502519573 382918167447 -1154478160496 1089911107102
++Satellite 3 blue 658153818797602032054840 360186299738 381699610499 0 1587679452990
++Satellite 6 blue 818807078558504516012751 360111330129 384795538223 0 1587679452780
++Planet 5 yellow 5911840881402282985588039 -320049139418 527401817561 1254030151573 760997132454
++Planet 2 blue 9738271015695046316370518 -601213477817 -191892733867 440982277195 -1381628596272
++Planet 6 yellow 493090123690898375347999 484549318630 397112304639 -922676355497 1125833156387
++Planet 2 yellow 8565305387027960416486132 -635489854966 -64936598008 146537098601 -1434057871724
++Planet 4 green 1391907433092370256631215 675659173833 -214751551624 -414478557522 -1304047573249
++Planet 3 red 8831628479440165757801286 -713896093882 193802591330 350953971961 1292782867327
++Planet 4 yellow 9488421393853066322096694 561634947825 418058219834 -822160932374 1104521548555
++Planet 6 orange 6689379121327136753936723 640206507747 -318006522927 -606218913525 -1220431864056
++Planet 4 green 958464271043824183887925 -582533464008 548472972511 882956288938 937788389477
++Planet 6 green 6450041411415914388649108 -687588971643 447361982593 693737309719 1066264327191
++Satellite 7 blue 790199460219930177329570 -689294969561 449157941148 0 1272081393618
++Satellite 3 blue 111654086941410883327230 -689365199502 446236052018 0 1272081393127
++Star 8 red 1988920000000000000000000000000 10000000000000 0 0 0
++Planet 7 blue 3098337075288380364447426 10040045021399 -91894740026 -3336009578559 -1453734728721
++Planet 4 blue 7252986743403686381370304 10093484830123 -52046132523 -1713324157021 -3077458592960
++Planet 5 gray 7365313483316443541479659 10023321254907 -113096674003 -3320594273988 -684727700355
++Planet 4 blue 6537538285879509654358797 10067079081889 -218557211228 -2303560951813 -707003685008
++Planet 8 white 5914216787983244379165574 9939970695305 -191297249379 2455039569184 -770394340823
++Satellite 7 blue 89302995298283593057090 9938735416230 -192780278515 0 2573077287543
++Planet 8 yellow 3294182676999667100004517 10172371952174 149613835530 -1580776233151 1821231868647
++Planet 8 blue 3759649837901459023820709 10143649984473 -299762423819 -1802108702972 -863593521506
++Planet 6 white 1496603430961161278069427 10272058647922 -165675535285 -1061763582849 -1743540253342
++Planet 4 green 9495209539596200962925820 10037520596523 -330229732109 -1985721390311 -225617029141
++Planet 3 red 9166012399239530117498800 10391318442381 -134985514536 -583950643605 -1692853170716
++Satellite 4 blue 154149319535389517516379 10389913055142 -133812655596 0 1790740129877
++Planet 3 red 420819473326884999099436 9667717421988 255992379954 1085677668601 1409228566401
++Planet 6 white 5785676360959022210477955 10389393988189 -203907600720 -806162031354 -1539494591698
++Planet 2 white 961161197897145985124987 9482835434936 -146156457829 427416132953 -1512382564433
++Planet 7 white 2511612693876829102195120 10294558826840 404628271231 -1316646437356 958484262040
++Planet 7 green 3070000591977102407859654 9555897171644 245652704580 782800688027 1415184905802
++Satellite 8 blue 429784507767754242202004 9557636141002 247140165335 0 1617258555441
++Star 8 red 1988920000000000000000000000000 20000000000000 0 0 0
++Planet 5 orange 4686015961444661074807178 20066181316064 -81906359003 -2761619929801 -2231421877938
++Planet 4 white 8736547825582977369159847 20004812421949 -147627799091 -2996224457641 -97671959033
++Planet 5 orange 1342774698491062187719944 19903693820502 -78632655667 2066535450369 -2531011223422
++Planet 3 green 8673246332538545770722062 20042409662832 -136396055930 -2911013472721 -905122212199
++Planet 7 white 882768698853272013655185 19776844816255 -22713624615 246333361982 -2420158278851
++Planet 3 white 9057770765891709277492627 20102711373969 172670683724 -2209128284553 1314077158249
++Planet 7 blue 4926657677759927122281729 19905930302111 230513548184 2137876873572 872440831381
++Planet 7 orange 3359894075330248617874413 20045227966327 -213185786064 -2414266853728 -512193528386
++Planet 4 orange 626667205130167229040613 19930526144678 -325722552954 1952493136082 -416450210231
++Planet 5 gray 4665842768604320347309263 20170357209631 -293205619276 -1710718057778 -993954875449
++Satellite 2 blue 436506964422370590219489 20168834887848 -291976481676 0 1978510189412
++Satellite 4 blue 647706217999933014211132 20171660876546 -291356340755 0 1978510189784
++Planet 8 orange 5010566819091342597002255 20004737163380 -344802415083 -1961813580884 -26952918678
++Planet 5 white 303257906520822989644243 19922461844546 -336648097711 1910204180596 -439965975484
++Planet 4 blue 6032656773006453005040662 19625504458592 140904887529 641408464074 1704728730345
++Planet 4 orange 6849420245680311406752461 19886831707858 -429211740983 1672156991830 -440889968493
++Planet 2 gray 6129104268962552781865387 19617209204644 157744819171 682225784671 1655520302338
++Planet 5 yellow 844579577522245887952410 19895532715958 -405557455146 1724061054406 -444099778197
++Planet 4 yellow 7143024167309865735981559 20324325491781 392874168120 -1244824720725 1027627730432
++Planet 3 gray 6101301408460774450464220 19908890065344 -532103957231 1545588411417 -264644638057
++Planet 6 white 9812986907830076533596818 20285349822652 -443974914037 -1334133122371 -857468829491
++Planet 2 yellow 5657455052389603737699698 19907188581235 510490194851 1573686776744 286109515747
++Satellite 2 blue 280261220005530826151935 19905265588222 508763405292 0 1599483894342
++Satellite 1 blue 520355101293492017978062 19908885275027 511974028534 0 1599483894554
++Planet 7 red 3588461617080336707135087 20601971124275 -119791930515 -287024181417 -1442336461551
++Planet 3 yellow 6244653180247708168643769 19442843027451 272174250452 642209668075 1314641608498
++Planet 4 red 3572001096871714616875579 20401236641533 -468116350027 -1114074950900 -954907239812
++Planet 5 yellow 6222357464445667985659212 19442695562446 310372311344 701869207186 1260276156894
++Planet 3 green 7508132635287116962889838 20044623141532 -700347835125 -1372548874204 -87452890694
++Planet 8 orange 6352053996883586854477935 20708573786237 77627135878 -148612125003 1356518631061
++Planet 6 orange 1005395150736259853057332 19325980050728 -319896409202 571919500801 -1205031197064
++Planet 7 yellow 9914687303831686428203064 19856968859530 723815051881 1315871999923 260025917357
++Planet 8 yellow 4496824235577647492633163 19633806478048 714812302081 1144192672710 586162190257
++Planet 2 red 9031305963810049510997411 19391167391233 -544360451500 849755319358 -950397381869
++Satellite 7 blue 707360918216062406963650 19389944729547 -543022028922 0 1274887950956
++Satellite 7 blue 156716645784238074136533 19392490737864 -546223641267 0 1274887951276
++Star 8 red 1988920000000000000000000000000 30000000000000 0 0 0
++Planet 2 gray 2229484497532381662720622 30098209320887 -29204001561 -1025931873831 -3450077633872
++Planet 5 gray 2789549038447055491251980 30038518715365 109642781741 -3188657649891 1120210509636
++Planet 4 white 1657722746207704284668807 30130647866947 -3271451777 -79778750879 -3186023923940
++Planet 7 white 9991854618701443477132152 30178711715435 -155293605559 -1553113116535 -1787320915903
++Planet 7 green 6893592536014753441454824 30216783442340 68347063546 -726638130924 2304753228354
++Satellite 3 blue 314296825051277081940513 30215620743545 70098379693 0 2416586522244
++Planet 6 green 8987582801104324025978591 29802956540915 133108156947 1322573071753 1957839240863
++Planet 4 gray 5109396410154891424057788 30139848393583 -317178351627 -1790559788704 -789482979468
++Planet 3 blue 6093441398180228827697877 29865819529145 -306452106797 1824710942526 -798952162551
++Planet 3 orange 5651615582668368037972645 30311106479094 -35860940071 -235756193888 -2045269289090
++Planet 6 blue 4753314399168488976952220 30251790980235 370668523265 -1423728769919 967123022503
++Satellite 1 blue 411594088147205975006308 30249979540662 368707118103 0 1721142223274
++Planet 6 white 166330897234800894093184 29732605629525 -361430681062 1381348484385 -1021952002813
++Planet 3 red 2156892407069977666578173 29645062430840 -217517749755 933061345148 -1522535637190
++Planet 8 orange 8366135771117611297818276 30413135644148 288617670316 -929450091372 1330441624668
++Planet 5 green 4434198893395817323573919 30502334427581 -211095964024 -604679333809 -1438924938351
++Planet 4 gray 9865760732675899555048034 29543913814596 -261868849777 791062797254 -1377761478398
++Satellite 6 blue 720133697288455444235538 29542175560031 -263512515916 0 1588712384955
++Star 8 red 1988920000000000000000000000000 40000000000000 0 0 0
++Planet 2 green 4370629708255233495676329 39990560899547 140079156221 3067905508583 206727889124
++Planet 6 orange 3738422498792626415743381 40086107157961 -60512522895 -2042002606353 -2905696747856
++Planet 8 orange 2040734307537529005456999 40085888623901 -120007150564 -2438874410409 -1745492381024
++Planet 8 white 2922904992859412594934775 39978347276009 140944555705 3015658894956 463283092971
++Planet 7 white 6665806361176376288416134 39847818768105 155360657416 1764926731483 1728807850513
++Planet 4 blue 5332912159635625633589320 40071700905179 216639171668 -2289699321738 757820077937
++Planet 8 red 2129725793970406896667775 39776779582809 -16769343851 182425881562 -2428310955406
++Planet 7 blue 349910938078929555195418 40151173040048 -142742455193 -1734716136628 -1837171089987
++Planet 2 white 8649370542011125208457301 39671877720340 38031960996 230808974831 1991313753030
++Planet 3 orange 8888249130686752944854364 40166647843879 -251787517862 -1748457583256 -1157232450747
++Satellite 3 blue 461335892423204816382570 40165420838014 -249968577884 0 2096733379919
++Satellite 8 blue 740977202863005709244138 40165269555364 -253529526814 0 2096733380455
++Planet 7 blue 601075722206353967085465 40282648703837 144060858109 -928880878099 1822472666482
++Planet 2 gray 6540914582053568548607687 40242518772950 -200319112212 -1308240552036 -1583837357802
++Planet 2 green 3882246512320787636898209 39580522376058 67526187390 280918485694 1745086216986
++Planet 6 green 8943804103103291457944710 40409243399982 95804311191 -405077645669 1730353790018
++Planet 3 blue 9786334583799667507046695 39765205547021 343903098393 1474544241681 1006721981389
++Planet 3 green 7229030106043592375293467 39811944108826 388802797207 1578220303838 763352598900
++Planet 4 gray 777614471882890972205123 40521138246559 80109336715 -241074280979 1568269483079
++Planet 8 orange 5960454577029475045458773 40500793486477 59456709033 -191274924294 1611075314634
++Planet 8 red 4457331784093085766277395 40121564422053 -523315673543 -1531101117016 -355669497026
++Planet 2 green 8825374483419306310290220 40442053927717 -323486849206 -919305562785 -1256257049703
++Satellite 5 blue 320340322018001792612617 40441012263630 -325055026675 0 1556696660587
++Satellite 5 blue 276491181090324210760376 40443679776343 -325247761183 0 1556696661401
++Planet 4 blue 9527512013243067855488757 39946275231679 598041902081 1480882028052 133034229862
++Planet 5 blue 2860301510651621910643988 40622683776163 54276302630 -126545847013 1451794651765
++Planet 8 red 5107132084873630475950325 39829642588239 596275499268 1406769882198 401917698060
++Planet 6 gray 4039515656624777435973550 40575687493988 237246345407 -556327373672 1349950032048
++Planet 5 green 9606715988174463531185441 39538201597140 558688314279 1043067348973 862174531883
++Planet 6 green 3264428263017999456284486 39694978879478 665316804792 1224196532256 561245102060
++Planet 4 red 4446264818172708286478782 39304557764060 -176840265179 335185726865 -1318151785790
++Planet 5 green 224536476905184523198393 39358621636768 362348509398 660287983807 1168748912531
++Planet 5 gray 9212603935196827870908720 40363207026298 -739615943415 -1139283373967 -559473778322
++Planet 7 blue 791520548745499760941470 40729011417864 -396464176556 -604245499189 -1111076092495
++Satellite 2 blue 845237520137704949756569 40727493705290 -398320529354 0 1264754010596
++Satellite 2 blue 315786078865856208381734 40730201000835 -398362174653 0 1264754011262
++Star 8 red 1988920000000000000000000000000 50000000000000 0 0 0
++Planet 2 white 1634036539016015416714766 49935337651683 91754846254 2810936542544 1980949946856
++Planet 6 white 3638415984733116938848602 50083632230368 -54870453652 -1998371812758 -3045870421733
++Planet 8 yellow 7103372748280403531274802 50034025260355 -131640744452 -3025135212340 -781908470950
++Planet 6 red 2647952709230088107972719 49899307230760 -212766957469 2146467988344 -1015824112933
++Planet 2 gray 1146799266625500388056126 49894087100067 170510213267 2184472085882 1356890997940
++Satellite 6 blue 952418729367029068270321 49892736912193 171625599404 0 2571589290220
++Planet 2 red 9755803593190523553956600 49787812149519 90701598895 942707055622 2205374394752
++Planet 7 yellow 746490084534923083628075 49671614063203 -110574420995 624596230242 -1854937302333
++Planet 8 yellow 4496000242960725063698865 50218909090949 -215546602880 -1458412206467 -1481163173442
++Planet 3 green 4336507490962357252030664 50295041576631 -81829476900 -556481823244 -2006431920561
++Planet 7 red 2783385212137064992169533 49808164958770 351360952629 1598264875851 872616054976
++Satellite 1 blue 214427216950565140985542 49809493943085 349499108101 0 1820963864208
++Planet 7 red 4344421938675659124695292 50257258308660 -359045323798 -1409186241525 -1009691103193
++Planet 8 gray 9570362229384633363713062 49561819159112 21227754707 84171447315 1737457214469
++Planet 8 red 5986560248573640671105620 49512174486727 -138130771633 440835667543 -1556864435385
++Planet 3 yellow 3542099963697763740797318 50099292754845 -526168094941 -1547193262227 -291969586834
++Planet 5 gray 7645242136215278972828121 50491828746758 153263422047 -477568159897 1532536246654
++Satellite 7 blue 590997024376825229838960 50490081490382 155218031581 0 1605222319770
++Star 8 red 1988920000000000000000000000000 60000000000000 0 0 0
++Planet 4 green 1219378915304160507235395 60092342897486 110642814770 -2330049838151 1944668108703
++Planet 4 gray 1711423548566220670263081 59925140683575 -112121845494 2609664893507 -1742369911632
++Planet 2 gray 1021337305584801493837802 59977637403050 -144809283748 2974606683105 -459362332429
++Planet 3 green 3437922929918577990861318 59889498659529 56220000498 1483759939550 2916354692354
++Planet 3 yellow 2522613042664395841640716 60221758648604 53216931150 -562983525421 2345991455804
++Planet 4 white 8215286427288736275655395 60197379156531 68210726539 -823489849816 2382905742483
++Planet 6 gray 5575535212289629639082125 59866219949691 -155495307712 1928397884382 -1659092932038
++Planet 5 red 1456429328642996456612001 60087419875125 -202651438287 -2251860715803 -971408760974
++Planet 7 gray 8301947220860908823850379 59665869842801 68082587543 393927851690 1933286905811
++Planet 7 red 684689345542880711356751 59694825429420 40186929029 271123256839 2058876492386
++Satellite 3 blue 555343254464892109760349 59693395734890 38735565441 0 2076651206419
++Satellite 4 blue 542140796397361092363337 59696350075529 42168138896 0 2076651206245
++Planet 8 gray 8307422796477540684634169 60162843245349 272183820810 -1755544541578 1050314341441
++Planet 7 white 6703061516304187890653143 59902044212147 -294699331082 1961915822306 -652125708497
++Planet 2 gray 9824936203574590408922805 59702371007767 -279110605542 1233808920476 -1315669481264
++Planet 2 blue 9035416811621978670408567 60116081395834 394973224026 -1722802923739 506326393716
++Planet 7 blue 3935470905156005189163250 59593537767039 -46662509907 205436398936 -1789490912719
++Planet 5 green 171206478219247499350110 60378060533449 239193262240 -920974701611 1455660513691
++Planet 4 red 3407987205363832914921746 59523209665737 190532743651 596658317793 1493081521476
++Planet 3 orange 7818403438164855378117174 60258567244782 428860355049 -1394289302252 840640873115
++Planet 5 blue 7547467113488989959999976 60126924552953 -500563638669 -1554097995017 -394062169172
++Planet 6 orange 5147023627024626579530996 60269145577437 -440514803834 -1368361863908 -836041242653
++Satellite 2 blue 157863942397176731507182 60268052352812 -438665406126 0 1603552041991
++Satellite 2 blue 869682863380490433993595 60270817602110 -438992623792 0 1603552042567
++Planet 7 white 6221912268253582504805379 60082945869480 618239850742 -1445822536749 193978125610
++Planet 5 green 7283265608042230210678607 60104282636667 629972314465 -1422454384116 235466369407
++Planet 8 gray 9563539718897693634666361 59523058544135 -388311511733 927561447650 -1139272192245
++Planet 4 white 2867102415775602045567445 60584190119502 239411774092 -549857417540 1341710413697
++Planet 3 green 8104698937770025588058896 59803335964465 720819431293 1285893447360 350835429301
++Planet 6 gray 2750831508384949753427094 59322145340783 272047024991 502110898053 1251100656955
++Planet 5 white 2982289267936245027974326 60720290050932 160845946011 -292282573194 1308881167061
++Planet 2 red 9046545841566399107636867 60648378138929 318949315548 -598268992162 1216194915014
++Planet 5 green 6655574167831965908697682 59811331228700 -798593349141 1237800734333 -292432116937
++Planet 7 gray 6404177321189387315194519 59211952849287 -190974705171 301344673473 -1243483062851
++Satellite 7 blue 802528689349664398464088 59210721303354 -192255362693 0 1279475963736
++Satellite 8 blue 782070021342240588439959 59210472288291 -191984844464 0 1279475963628
